@@ -1,3 +1,14 @@
 <resources>
+
+    <string-array name="asignatura_opciones">
+        <item>ADAT</item>
+        <item>PSP</item>
+        <item>EIE</item>
+        <item>PMULT</item>
+        <item>DINT</item>
+    </string-array>
+
+
+
     <string name="app_name">Tarea 7 - ListaTareas</string>
 </resources>

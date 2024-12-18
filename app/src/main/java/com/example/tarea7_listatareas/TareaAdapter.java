@@ -1,14 +1,9 @@
 package com.example.tarea7_listatareas;
 
-import static java.security.AccessController.getContext;
-
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
-import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -80,7 +75,7 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
 
         public TareaViewHolder(@NonNull View itemView) {
             super(itemView);
-            tv_asignatura =  itemView.findViewById(R.id.textAsignatura);
+            tv_asignatura =  itemView.findViewById(R.id.textDescripcion);
             tv_descripcion =  itemView.findViewById(R.id.textDescripcion);
             tv_fecha =  itemView.findViewById(R.id.textFecha);
             tv_hora =  itemView.findViewById(R.id.textHora);

@@ -11,8 +11,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,6 +36,7 @@ public class MainActivity extends AppCompatActivity implements TareaAdapter.OnCl
         });
         coleccion= generarArrayDatos();
         setupRecyclerViews();
+        setupFab();
     }
 
     private ArrayList<Tarea> generarArrayDatos() {
@@ -58,8 +62,27 @@ public class MainActivity extends AppCompatActivity implements TareaAdapter.OnCl
         }
     }
 
+    public void setupFab(){
+
+        FloatingActionButton fab = findViewById(R.id.floatingActionButton);
+
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                DialogFragment dialogFragment = new DialogFab();
+                dialogFragment.show(getSupportFragmentManager(), "Dialogo");
+            }
+        });
+
+
+    }
+
     @Override
     public void onClickTarea(View view, int position) {
+
+
+
 
     }
 }
