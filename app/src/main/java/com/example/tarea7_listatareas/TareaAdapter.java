@@ -64,7 +64,7 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
         return coleccion.size();
     }
 
-    public class TareaViewHolder extends RecyclerView.ViewHolder implements View.OnCreateContextMenuListener {
+    public class TareaViewHolder extends RecyclerView.ViewHolder {
 
         TextView tv_asignatura;
         TextView tv_descripcion;
@@ -83,12 +83,6 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
 
         }
 
-        @Override
-        public void onCreateContextMenu(ContextMenu contextMenu, View view, ContextMenu.ContextMenuInfo contextMenuInfo) {
-
-
-
-        }
     }
 
     public interface OnClickTarea {
