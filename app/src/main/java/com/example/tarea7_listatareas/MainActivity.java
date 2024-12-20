@@ -20,9 +20,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class MainActivity extends AppCompatActivity implements TareaAdapter.OnClickTarea{
+public class MainActivity extends AppCompatActivity implements TareaAdapter.OnClickTarea,DialogFab.OnTaskCreatedListener{
 
-    ArrayList<Tarea> coleccion;
+    private ArrayList<Tarea> coleccion;
+    private TareaAdapter tareaAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements TareaAdapter.OnCl
         try {
 
             RecyclerView rvTareas = findViewById(R.id.rv_Tareas);
-            TareaAdapter tareaAdapter = new TareaAdapter(coleccion, this);
+            tareaAdapter = new TareaAdapter(coleccion, this);
             rvTareas.setAdapter(tareaAdapter);
             rvTareas.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
 
@@ -71,7 +72,7 @@ public class MainActivity extends AppCompatActivity implements TareaAdapter.OnCl
             public void onClick(View view) {
 
                 DialogFragment dialogFragment = new DialogFab();
-                dialogFragment.show(getSupportFragmentManager(), "Dialogo");
+                dialogFragment.show(getSupportFragmentManager(), "EmptyDialog");
             }
         });
 
@@ -84,5 +85,11 @@ public class MainActivity extends AppCompatActivity implements TareaAdapter.OnCl
 
 
 
+    }
+
+    @Override
+    public void onTaskCreated(Tarea tarea) {
+        coleccion.add(tarea);
+        tareaAdapter.notifyItemInserted(coleccion.size() - 1);
     }
 }

@@ -75,7 +75,7 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
 
         public TareaViewHolder(@NonNull View itemView) {
             super(itemView);
-            tv_asignatura =  itemView.findViewById(R.id.textDescripcion);
+            tv_asignatura =  itemView.findViewById(R.id.textAsignatura);
             tv_descripcion =  itemView.findViewById(R.id.textDescripcion);
             tv_fecha =  itemView.findViewById(R.id.textFecha);
             tv_hora =  itemView.findViewById(R.id.textHora);

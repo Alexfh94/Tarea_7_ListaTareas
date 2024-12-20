@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/editTarea"
+        android:icon="@drawable/edit_icon_foreground"
+        android:title="Editar Tarea" />
+    <item
+        android:id="@+id/deleteTarea"
+        android:icon="@drawable/delete_icon_2_foreground"
+        android:title="Eliminar Tarea" />
+    <item
+        android:id="@+id/setComplete"
+        android:icon="@drawable/complete_icon_foreground"
+        android:title="Marcar Como Completado" />
+</menu>
