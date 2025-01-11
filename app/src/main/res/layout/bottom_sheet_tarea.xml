@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/option_editar"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:clickable="true"
+        android:drawableLeft="@drawable/edit_icon_foreground"
+        android:drawablePadding="8dp"
+        android:focusable="true"
+        android:padding="12dp"
+        android:text="Editar"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/option_eliminar"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:drawableLeft="@drawable/delete_icon_2_foreground"
+        android:drawablePadding="8dp"
+        android:padding="12dp"
+        android:text="Eliminar"
+        android:textSize="16sp"
+        android:clickable="true"
+        android:focusable="true" />
+
+    <TextView
+        android:id="@+id/option_marcar_completado"
+        android:layout_width="match_parent"
+        android:layout_height="68dp"
+        android:drawableLeft="@drawable/complete_icon_foreground"
+        android:drawablePadding="8dp"
+        android:padding="12dp"
+        android:text="Marcar como completado"
+        android:textSize="16sp"
+        android:clickable="true"
+        android:focusable="true" />
+</LinearLayout>

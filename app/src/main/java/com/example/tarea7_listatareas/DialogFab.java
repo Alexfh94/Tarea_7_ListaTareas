@@ -7,6 +7,7 @@ import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -16,6 +17,7 @@ import android.widget.Spinner;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 
 public class DialogFab extends androidx.fragment.app.DialogFragment {
@@ -28,6 +30,7 @@ public class DialogFab extends androidx.fragment.app.DialogFragment {
     private Button cancel;
 
     private OnTaskCreatedListener listener;
+    private ArrayList<Tarea> coleccion;
 
 
     @NonNull
@@ -54,10 +57,12 @@ public class DialogFab extends androidx.fragment.app.DialogFragment {
         super.onAttach(context);
         if (context instanceof OnTaskCreatedListener) {
             listener = (OnTaskCreatedListener) context;
+        } else if (context instanceof OnTaskEditedListener) {
         } else {
             throw new RuntimeException(context.toString());
         }
     }
+
 
 
 
@@ -69,11 +74,35 @@ public class DialogFab extends androidx.fragment.app.DialogFragment {
         accept = view.findViewById(R.id.buttonAceptar);
         cancel = view.findViewById(R.id.buttonCancelar);
         spinner = view.findViewById(R.id.spinner);
+        Log.i("test",getArguments().size()+"");
+        if (getArguments().size() > 1) {
+            String asignatura = getArguments().getString("asignatura", "");
+            String descripcion = getArguments().getString("descripcion", "");
+            String fecha = getArguments().getString("fecha", "");
+            String hora = getArguments().getString("hora", "");
 
-        textDate.setOnClickListener(v -> showDatePicker(textDate));
-        textTime.setOnClickListener(v -> showTimePicker(textTime));
-        accept.setOnClickListener(v -> acceptAction(accept));
-        cancel.setOnClickListener(v -> cancelAction(cancel));
+            textDescripcion.setText(descripcion);
+            textDate.setText(fecha);
+            textTime.setText(hora);
+
+            for (int i = 0; i < spinner.getAdapter().getCount(); i++) {
+                if (spinner.getAdapter().getItem(i).toString().equals(asignatura)) {
+                    spinner.setSelection(i);
+                    break;
+                }
+            }
+
+        }
+
+
+
+
+            textDate.setOnClickListener(v -> showDatePicker(textDate));
+            textTime.setOnClickListener(v -> showTimePicker(textTime));
+            accept.setOnClickListener(v -> acceptAction(accept));
+            cancel.setOnClickListener(v -> cancelAction(cancel));
+
+
 
     }
 
@@ -127,18 +156,31 @@ public class DialogFab extends androidx.fragment.app.DialogFragment {
         }
 
         if (isValid) {
+            // Crear o editar la tarea
             Tarea tarea = new Tarea(
                     spinner.getSelectedItem().toString(),
                     textDescripcion.getText().toString(),
                     textDate.getText().toString(),
                     textTime.getText().toString(),
-                    false
+                    false,
+                    getArguments().getInt("tamaño")+1
             );
 
-            listener.onTaskCreated(tarea);
+            if (getArguments().size() > 1) {
+                // Es una edición
+                OnTaskEditedListener editListener = (OnTaskEditedListener) getActivity();
+                if (editListener != null) {
+                    editListener.onTaskEdited(tarea); // Notificar la edición
+                }
+            } else {
+                // Es una nueva tarea
+                listener.onTaskCreated(tarea);
+            }
+
             dismiss();
         }
     }
+
 
     private void cancelAction(Button cancel) {
         dismiss();
@@ -150,5 +192,9 @@ public class DialogFab extends androidx.fragment.app.DialogFragment {
         void onTaskCreated(Tarea tarea);
     }
 
+    // Interfaz para notificar de la edición de una tarea
+    public interface OnTaskEditedListener {
+        void onTaskEdited(Tarea tarea);
+    }
 
 }
