@@ -167,7 +167,7 @@ public class DialogFab extends androidx.fragment.app.DialogFragment {
             );
 
             if (getArguments().size() > 1) {
-                // Es una edición
+                tarea.setId(getArguments().getInt("id"));
                 OnTaskEditedListener editListener = (OnTaskEditedListener) getActivity();
                 if (editListener != null) {
                     editListener.onTaskEdited(tarea); // Notificar la edición

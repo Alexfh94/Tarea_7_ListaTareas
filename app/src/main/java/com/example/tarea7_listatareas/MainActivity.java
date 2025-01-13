@@ -157,7 +157,7 @@ public class MainActivity extends AppCompatActivity implements TareaAdapter.OnCl
     public void onTaskCreated(Tarea tarea) {
         coleccion.add(tarea);
         tareaAdapter.notifyItemInserted(coleccion.size() - 1);
-        ordenar();
+       // ordenar();
         tareaAdapter.notifyDataSetChanged();
 
     }
@@ -167,12 +167,14 @@ public class MainActivity extends AppCompatActivity implements TareaAdapter.OnCl
         // Buscar la tarea en la lista y reemplazarla
         for (int i = 0; i < coleccion.size(); i++) {
             if (coleccion.get(i).getId() == (tareaEditada.getId())) {
+                System.out.println(i);
+                System.out.println(tareaEditada.getId());
                 coleccion.set(i, tareaEditada);
                 tareaAdapter.notifyItemChanged(i);
                 break;
             }
         }
-        ordenar();
+        //ordenar();
         tareaAdapter.notifyDataSetChanged();
 
     }
