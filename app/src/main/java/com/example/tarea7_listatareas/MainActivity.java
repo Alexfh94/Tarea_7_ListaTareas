@@ -157,7 +157,7 @@ public class MainActivity extends AppCompatActivity implements TareaAdapter.OnCl
     public void onTaskCreated(Tarea tarea) {
         coleccion.add(tarea);
         tareaAdapter.notifyItemInserted(coleccion.size() - 1);
-       // ordenar();
+       ordenar();
         tareaAdapter.notifyDataSetChanged();
 
     }
@@ -174,7 +174,7 @@ public class MainActivity extends AppCompatActivity implements TareaAdapter.OnCl
                 break;
             }
         }
-        //ordenar();
+        ordenar();
         tareaAdapter.notifyDataSetChanged();
 
     }
