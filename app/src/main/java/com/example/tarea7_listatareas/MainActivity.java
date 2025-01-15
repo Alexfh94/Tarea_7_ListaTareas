@@ -50,6 +50,8 @@ public class MainActivity extends AppCompatActivity implements TareaAdapter.OnCl
         generarArrayDatos();
         setupRecyclerViews();
         setupFab();
+        ordenar();
+
     }
 
     private void generarArrayDatos() {

@@ -18,7 +18,7 @@ public class BaseDatos extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
 
-        sqLiteDatabase.execSQL("CREATE TABLE  tareas (id integer primary key autoincrement, asignatura text, descripcion text, fecha text, hora text, estado integer)");
+        sqLiteDatabase.execSQL("CREATE TABLE  tareas (id integer primary key, asignatura text, descripcion text, fecha text, hora text, estado integer)");
 
     }
 
