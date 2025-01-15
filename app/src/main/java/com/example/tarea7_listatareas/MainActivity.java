@@ -2,6 +2,9 @@ package com.example.tarea7_listatareas;
 
 import static java.security.AccessController.getContext;
 
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -25,8 +28,12 @@ import java.util.Collections;
 
 public class MainActivity extends AppCompatActivity implements TareaAdapter.OnClickTarea,DialogFab.OnTaskCreatedListener,DialogFab.OnTaskEditedListener{
 
-    private ArrayList<Tarea> coleccion;
+    private ArrayList<Tarea> coleccion = new ArrayList<>();
     private TareaAdapter tareaAdapter;
+    SQLiteDatabase bdLeer;
+    SQLiteDatabase bdEscribir;
+    ContentValues contentValues;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,18 +45,40 @@ public class MainActivity extends AppCompatActivity implements TareaAdapter.OnCl
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-        coleccion= generarArrayDatos();
+
+        configDatabase();
+        generarArrayDatos();
         setupRecyclerViews();
         setupFab();
     }
 
-    private ArrayList<Tarea> generarArrayDatos() {
-        return new ArrayList<>(Arrays.asList(
-                new Tarea("ADAT","Tarea Json","25-12-2024", "12:00", true,1),
-                new Tarea("ADAT","Tarea XML","25-12-2024","12:00", true,2),
-                new Tarea("PSP", "Tarea cena filósolfos","25-12-2024","12:00", false,3)
+    private void generarArrayDatos() {
+        String asignatura = "";
+        String descripcion ="";
+        String fecha ="";
+        String hora ="";
+        Boolean estado =false;
+        Integer id = 0;
 
-        ));
+        String consulta = "SELECT * FROM tareas";
+        Cursor cursor = bdLeer.rawQuery(consulta,
+                null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                id = cursor.getInt(0);
+                asignatura = cursor.getString(1);
+                descripcion = cursor.getString(2);
+                fecha = cursor.getString(3);
+                hora = cursor.getString(4);
+                estado = cursor.getInt(5) == 1;
+                Tarea tarea = new Tarea(asignatura,descripcion,fecha,hora,estado,id);
+                coleccion.add(tarea);
+
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+
     }
 
     private void setupRecyclerViews() {
@@ -117,6 +146,7 @@ public class MainActivity extends AppCompatActivity implements TareaAdapter.OnCl
         bottomSheetView.findViewById(R.id.option_eliminar).setOnClickListener(v -> {
             Log.d("BottomSheet", "Eliminar tarea: " + tarea.getDescripcion());
             coleccion.remove(position);
+            bdEscribir.delete("tareas","id = ?",new String[]{String.valueOf(tarea.getId())});
             tareaAdapter.notifyItemRemoved(position);
             bottomSheetDialog.dismiss();
         });
@@ -134,11 +164,15 @@ public class MainActivity extends AppCompatActivity implements TareaAdapter.OnCl
             if (!tarea.getEstado()) {
                 Log.d("BottomSheet", "Marcar como completada: " + tarea.getDescripcion());
                 tarea.setEstado(true);
+                contentValues.put("estado", 1);
+                bdEscribir.update("tareas",contentValues,"id=?",new String[]{String.valueOf(tarea.getId())});
                 marcarCompletadoOption.setText("Marcar como pendiente");
                 marcarCompletadoOption.setCompoundDrawablesWithIntrinsicBounds(R.drawable.pending_icon_foreground, 0, 0, 0); // Cambiar a "X"
             } else {
                 Log.d("BottomSheet", "Marcar como pendiente: " + tarea.getDescripcion());
                 tarea.setEstado(false);
+                contentValues.put("estado", 0);
+                bdEscribir.update("tareas",contentValues,"id=?",new String[]{String.valueOf(tarea.getId())});
                 marcarCompletadoOption.setText("Marcar como completado");
                 marcarCompletadoOption.setCompoundDrawablesWithIntrinsicBounds(R.drawable.complete_icon_foreground, 0, 0, 0); // Cambiar a "check"
             }
@@ -157,6 +191,16 @@ public class MainActivity extends AppCompatActivity implements TareaAdapter.OnCl
     public void onTaskCreated(Tarea tarea) {
         coleccion.add(tarea);
         tareaAdapter.notifyItemInserted(coleccion.size() - 1);
+
+        contentValues.put("asignatura", tarea.getAsignatura());
+        contentValues.put("descripcion",tarea.getDescripcion());
+        contentValues.put("fecha", tarea.getFecha());
+        contentValues.put("hora", tarea.getHora());
+        contentValues.put("estado",tarea.getEstado());
+        contentValues.put("id",tarea.getId());
+
+        bdEscribir.insert("tareas",null,contentValues);
+
        ordenar();
         tareaAdapter.notifyDataSetChanged();
 
@@ -170,6 +214,17 @@ public class MainActivity extends AppCompatActivity implements TareaAdapter.OnCl
                 System.out.println(i);
                 System.out.println(tareaEditada.getId());
                 coleccion.set(i, tareaEditada);
+
+                Tarea tarea =coleccion.get(i);
+                contentValues.put("asignatura", tarea.getAsignatura());
+                contentValues.put("descripcion",tarea.getDescripcion());
+                contentValues.put("fecha", tarea.getFecha());
+                contentValues.put("hora", tarea.getHora());
+                contentValues.put("estado",tarea.getEstado());
+                contentValues.put("id",tarea.getId());
+                bdEscribir.update("tareas", contentValues, "id = ?", new String[]{String.valueOf(tarea.getId())});
+
+
                 tareaAdapter.notifyItemChanged(i);
                 break;
             }
@@ -181,6 +236,13 @@ public class MainActivity extends AppCompatActivity implements TareaAdapter.OnCl
 
     private void ordenar() {
         coleccion.sort((tarea1, tarea2) -> tarea1.getAsignatura().compareToIgnoreCase(tarea2.getAsignatura()));
+    }
+
+    private void configDatabase(){
+
+        bdLeer = new BaseDatos(this).getReadableDatabase();
+        bdEscribir = new BaseDatos(this).getWritableDatabase();
+        contentValues = new ContentValues();
     }
 
 }
