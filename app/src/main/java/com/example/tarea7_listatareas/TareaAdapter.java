@@ -64,6 +64,12 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
         return coleccion.size();
     }
 
+    public void updateData(ArrayList<Tarea> tareas) {
+
+        coleccion = tareas;
+        notifyDataSetChanged();
+    }
+
     public class TareaViewHolder extends RecyclerView.ViewHolder {
 
         TextView tv_asignatura;

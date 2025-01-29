@@ -16,6 +16,8 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.DialogFragment;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -33,6 +35,7 @@ public class MainActivity extends AppCompatActivity implements TareaAdapter.OnCl
     SQLiteDatabase bdLeer;
     SQLiteDatabase bdEscribir;
     ContentValues contentValues;
+    TareaViewModel tareaViewModel;
 
 
     @Override
@@ -45,6 +48,16 @@ public class MainActivity extends AppCompatActivity implements TareaAdapter.OnCl
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        tareaViewModel = new ViewModelProvider(this).get(TareaViewModel.class);
+        tareaViewModel.getTareas().observe(this, tareas -> {
+            coleccion = tareas;
+            ordenar();
+            tareaAdapter.notifyDataSetChanged();
+        });
+
+
+
 
         configDatabase();
         generarArrayDatos();
@@ -76,6 +89,7 @@ public class MainActivity extends AppCompatActivity implements TareaAdapter.OnCl
                 estado = cursor.getInt(5) == 1;
                 Tarea tarea = new Tarea(asignatura,descripcion,fecha,hora,estado,id);
                 coleccion.add(tarea);
+                tareaViewModel.getTareas().setValue(coleccion);
 
             } while (cursor.moveToNext());
             cursor.close();
@@ -84,18 +98,17 @@ public class MainActivity extends AppCompatActivity implements TareaAdapter.OnCl
     }
 
     private void setupRecyclerViews() {
-        try {
+        RecyclerView rvTareas = findViewById(R.id.rv_Tareas);
+        tareaAdapter = new TareaAdapter(new ArrayList<>(), this);
+        rvTareas.setAdapter(tareaAdapter);
+        rvTareas.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
 
-            RecyclerView rvTareas = findViewById(R.id.rv_Tareas);
-            tareaAdapter = new TareaAdapter(coleccion, this);
-            rvTareas.setAdapter(tareaAdapter);
-            rvTareas.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
-
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        // Observa los cambios en el LiveData
+        tareaViewModel.getTareas().observe(this, tareas -> {
+            tareaAdapter.updateData(tareas);  // Actualizar el adaptador
+        });
     }
+
 
     public void setupFab(){
 
@@ -146,10 +159,14 @@ public class MainActivity extends AppCompatActivity implements TareaAdapter.OnCl
         });
 
         bottomSheetView.findViewById(R.id.option_eliminar).setOnClickListener(v -> {
-            Log.d("BottomSheet", "Eliminar tarea: " + tarea.getDescripcion());
-            coleccion.remove(position);
+            ArrayList<Tarea> tareas = tareaViewModel.getTareas().getValue();
+
+            if (tareas != null) {
+                tareas.remove(position);  // Eliminar la tarea
+                tareaViewModel.getTareas().setValue(tareas);  // Actualizar el LiveData
+            }
             bdEscribir.delete("tareas","id = ?",new String[]{String.valueOf(tarea.getId())});
-            tareaAdapter.notifyItemRemoved(position);
+
             bottomSheetDialog.dismiss();
         });
 
@@ -191,8 +208,11 @@ public class MainActivity extends AppCompatActivity implements TareaAdapter.OnCl
 
     @Override
     public void onTaskCreated(Tarea tarea) {
-        coleccion.add(tarea);
-        tareaAdapter.notifyItemInserted(coleccion.size() - 1);
+        ArrayList<Tarea> tareas = tareaViewModel.getTareas().getValue();
+        if (tareas != null) {
+            tareas.add(tarea);  // Añadir la nueva tarea
+            tareaViewModel.getTareas().setValue(tareas);  // Actualizar el LiveData
+        }
 
         contentValues.put("asignatura", tarea.getAsignatura());
         contentValues.put("descripcion",tarea.getDescripcion());
@@ -203,38 +223,35 @@ public class MainActivity extends AppCompatActivity implements TareaAdapter.OnCl
 
         bdEscribir.insert("tareas",null,contentValues);
 
-       ordenar();
-        tareaAdapter.notifyDataSetChanged();
+
 
     }
 
     @Override
     public void onTaskEdited(Tarea tareaEditada) {
-        // Buscar la tarea en la lista y reemplazarla
-        for (int i = 0; i < coleccion.size(); i++) {
-            if (coleccion.get(i).getId() == (tareaEditada.getId())) {
-                System.out.println(i);
-                System.out.println(tareaEditada.getId());
-                coleccion.set(i, tareaEditada);
-
-                Tarea tarea =coleccion.get(i);
-                contentValues.put("asignatura", tarea.getAsignatura());
-                contentValues.put("descripcion",tarea.getDescripcion());
-                contentValues.put("fecha", tarea.getFecha());
-                contentValues.put("hora", tarea.getHora());
-                contentValues.put("estado",tarea.getEstado());
-                contentValues.put("id",tarea.getId());
-                bdEscribir.update("tareas", contentValues, "id = ?", new String[]{String.valueOf(tarea.getId())});
-
-
-                tareaAdapter.notifyItemChanged(i);
-                break;
+        ArrayList<Tarea> tareas = tareaViewModel.getTareas().getValue();
+        if (tareas != null) {
+            for (int i = 0; i < tareas.size(); i++) {
+                if (tareas.get(i).getId() == tareaEditada.getId()) {
+                    tareas.set(i, tareaEditada);  // Reemplazar la tarea editada
+                    tareaViewModel.getTareas().setValue(tareas);  // Actualizar el LiveData
+                    break;
+                }
             }
-        }
-        ordenar();
-        tareaAdapter.notifyDataSetChanged();
 
+            // Realizar la actualización en la base de datos
+            contentValues.put("asignatura", tareaEditada.getAsignatura());
+            contentValues.put("descripcion", tareaEditada.getDescripcion());
+            contentValues.put("fecha", tareaEditada.getFecha());
+            contentValues.put("hora", tareaEditada.getHora());
+            contentValues.put("estado", tareaEditada.getEstado());
+            contentValues.put("id", tareaEditada.getId());
+            bdEscribir.update("tareas", contentValues, "id = ?", new String[]{String.valueOf(tareaEditada.getId())});
+
+
+        }
     }
+
 
     private void ordenar() {
         coleccion.sort((tarea1, tarea2) -> tarea1.getAsignatura().compareToIgnoreCase(tarea2.getAsignatura()));
