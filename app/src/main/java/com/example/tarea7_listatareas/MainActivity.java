@@ -50,11 +50,11 @@ public class MainActivity extends AppCompatActivity implements TareaAdapter.OnCl
         });
 
         tareaViewModel = new ViewModelProvider(this).get(TareaViewModel.class);
-        tareaViewModel.getTareas().observe(this, tareas -> {
-            coleccion = tareas;
-            ordenar();
-            tareaAdapter.notifyDataSetChanged();
-        });
+//        tareaViewModel.getTareas().observe(this, tareas -> {
+//            coleccion = tareas;
+//            ordenar();
+//            tareaAdapter.notifyDataSetChanged();
+//        });
 
 
 
@@ -102,10 +102,9 @@ public class MainActivity extends AppCompatActivity implements TareaAdapter.OnCl
         tareaAdapter = new TareaAdapter(new ArrayList<>(), this);
         rvTareas.setAdapter(tareaAdapter);
         rvTareas.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
-
-        // Observa los cambios en el LiveData
         tareaViewModel.getTareas().observe(this, tareas -> {
-            tareaAdapter.updateData(tareas);  // Actualizar el adaptador
+            ordenar();
+            tareaAdapter.updateData(tareas);
         });
     }
 
@@ -162,8 +161,8 @@ public class MainActivity extends AppCompatActivity implements TareaAdapter.OnCl
             ArrayList<Tarea> tareas = tareaViewModel.getTareas().getValue();
 
             if (tareas != null) {
-                tareas.remove(position);  // Eliminar la tarea
-                tareaViewModel.getTareas().setValue(tareas);  // Actualizar el LiveData
+                tareas.remove(position);
+                tareaViewModel.getTareas().setValue(tareas);
             }
             bdEscribir.delete("tareas","id = ?",new String[]{String.valueOf(tarea.getId())});
 
@@ -208,49 +207,49 @@ public class MainActivity extends AppCompatActivity implements TareaAdapter.OnCl
 
     @Override
     public void onTaskCreated(Tarea tarea) {
-        ArrayList<Tarea> tareas = tareaViewModel.getTareas().getValue();
-        if (tareas != null) {
-            tareas.add(tarea);  // Añadir la nueva tarea
-            tareaViewModel.getTareas().setValue(tareas);  // Actualizar el LiveData
-        }
-
+        ContentValues contentValues = new ContentValues();
         contentValues.put("asignatura", tarea.getAsignatura());
-        contentValues.put("descripcion",tarea.getDescripcion());
+        contentValues.put("descripcion", tarea.getDescripcion());
         contentValues.put("fecha", tarea.getFecha());
         contentValues.put("hora", tarea.getHora());
-        contentValues.put("estado",tarea.getEstado());
-        contentValues.put("id",tarea.getId());
+        contentValues.put("estado", tarea.getEstado());
 
-        bdEscribir.insert("tareas",null,contentValues);
+        long idGenerado = bdEscribir.insert("tareas", null, contentValues);
+        if (idGenerado != -1) {
+            tarea.setId((int) idGenerado);
+        }
 
-
-
+        ArrayList<Tarea> tareas = tareaViewModel.getTareas().getValue();
+        if (tareas != null) {
+            tareas.add(tarea);
+            tareaViewModel.getTareas().setValue(tareas);
+        }
     }
+
 
     @Override
     public void onTaskEdited(Tarea tareaEditada) {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("asignatura", tareaEditada.getAsignatura());
+        contentValues.put("descripcion", tareaEditada.getDescripcion());
+        contentValues.put("fecha", tareaEditada.getFecha());
+        contentValues.put("hora", tareaEditada.getHora());
+        contentValues.put("estado", tareaEditada.getEstado());
+
+        bdEscribir.update("tareas", contentValues, "id = ?", new String[]{String.valueOf(tareaEditada.getId())});
         ArrayList<Tarea> tareas = tareaViewModel.getTareas().getValue();
         if (tareas != null) {
             for (int i = 0; i < tareas.size(); i++) {
                 if (tareas.get(i).getId() == tareaEditada.getId()) {
-                    tareas.set(i, tareaEditada);  // Reemplazar la tarea editada
-                    tareaViewModel.getTareas().setValue(tareas);  // Actualizar el LiveData
+                    tareas.set(i, tareaEditada);
+                    tareaViewModel.getTareas().setValue(tareas);
                     break;
                 }
             }
-
-            // Realizar la actualización en la base de datos
-            contentValues.put("asignatura", tareaEditada.getAsignatura());
-            contentValues.put("descripcion", tareaEditada.getDescripcion());
-            contentValues.put("fecha", tareaEditada.getFecha());
-            contentValues.put("hora", tareaEditada.getHora());
-            contentValues.put("estado", tareaEditada.getEstado());
-            contentValues.put("id", tareaEditada.getId());
-            bdEscribir.update("tareas", contentValues, "id = ?", new String[]{String.valueOf(tareaEditada.getId())});
-
-
         }
     }
+
+
 
 
     private void ordenar() {
